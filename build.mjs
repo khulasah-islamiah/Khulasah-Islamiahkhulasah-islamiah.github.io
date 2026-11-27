@@ -84,7 +84,7 @@ const categories = JSON.parse(fs.readFileSync(path.join(ROOT, 'categories.json')
 const books = fs.readdirSync(path.join(ROOT, 'books'))
   .filter(f => f.endsWith('.md') && !f.startsWith('_'))
   .map(f => parseBook(path.join(ROOT, 'books', f)))
-  .sort((a, b) => (b.added || '').localeCompare(a.added || '') || a.slug.localeCompare(b.slug));
+  .sort((a, b) => (a.sample - b.sample) || (b.added || '').localeCompare(a.added || '') || a.slug.localeCompare(b.slug));
 
 // One PDF per book holding both languages. A ready-made pdf/<slug>.pdf wins; otherwise one is generated with --pdf.
 fs.rmSync(DIST, { recursive: true, force: true });
