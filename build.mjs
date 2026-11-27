@@ -1,0 +1,152 @@
+// Khulasah Islam — static site builder (no dependencies).
+// Usage:  node build.mjs          -> builds dist/ (website)
+//         node build.mjs --pdf    -> also renders dist/pdf/*.pdf with Playwright (if installed)
+import fs from 'node:fs';
+import path from 'node:path';
+
+const ROOT = path.dirname(new URL(import.meta.url).pathname);
+const DIST = path.join(ROOT, 'dist');
+const LANGS = ['th', 'ms'];
+
+// ---------- tiny Markdown → HTML (headings, paragraphs, lists, quotes, bold/italic, links) ----------
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const inline = s => esc(s)
+  .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+  .replace(/\*(.+?)\*/g, '<em>$1</em>')
+  .replace(/\[(.+?)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+function markdown(src, idPrefix) {
+  const lines = src.replace(/\r/g, '').split('\n');
+  const out = [], toc = [];
+  let para = [], list = null, quote = [];
+  const flushPara = () => { if (para.length) out.push(`<p>${inline(para.join(' '))}</p>`); para = []; };
+  const flushList = () => { if (list) out.push(`<${list.tag}>${list.items.map(i => `<li>${inline(i)}</li>`).join('')}</${list.tag}>`); list = null; };
+  const flushQuote = () => { if (quote.length) out.push(`<blockquote>${markdown(quote.join('\n'), idPrefix + 'q').html}</blockquote>`); quote = []; };
+  const flushAll = () => { flushPara(); flushList(); flushQuote(); };
+  for (const raw of lines) {
+    const line = raw.trimEnd();
+    let m;
+    if (/^>\s?/.test(line)) { flushPara(); flushList(); quote.push(line.replace(/^>\s?/, '')); continue; }
+    flushQuote();
+    if (!line.trim()) { flushPara(); flushList(); continue; }
+    if ((m = line.match(/^(#{1,4})\s+(.*)$/))) {
+      flushAll();
+      const level = Math.max(2, m[1].length); // the page owns <h1>, so "#" and "##" both become <h2>
+      const id = `${idPrefix}-${toc.length + 1}`;
+      if (level === 2) toc.push({ id, text: m[2] });
+      out.push(`<h${level} id="${id}">${inline(m[2])}</h${level}>`);
+      continue;
+    }
+    if ((m = line.match(/^\s*[-*]\s+(.*)$/)) || (m = line.match(/^\s*\d+[.)]\s+(.*)$/))) {
+      flushPara();
+      const tag = /^\s*\d/.test(line) ? 'ol' : 'ul';
+      if (!list || list.tag !== tag) { flushList(); list = { tag, items: [] }; }
+      list.items.push(m[1]);
+      continue;
+    }
+    flushList();
+    para.push(line.trim());
+  }
+  flushAll();
+  return { html: out.join('\n'), toc };
+}
+
+// ---------- read books ----------
+function parseBook(file) {
+  const text = fs.readFileSync(file, 'utf8').replace(/^﻿/, '');
+  const m = text.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+  if (!m) throw new Error(`${file}: missing front matter (--- ... ---)`);
+  const meta = {};
+  for (const l of m[1].split('\n')) {
+    const i = l.indexOf(':');
+    if (i > 0) meta[l.slice(0, i).trim()] = l.slice(i + 1).trim();
+  }
+  meta.slug = meta.slug || path.basename(file, '.md');
+  meta.sample = meta.sample === 'true';
+  const parts = {};
+  let cur = null;
+  for (const l of m[2].split('\n')) {
+    const h = l.match(/^===\s*(th|ms)\s*===\s*$/);
+    if (h) { cur = h[1]; parts[cur] = []; continue; }
+    if (cur) parts[cur].push(l);
+  }
+  meta.summary = {};
+  for (const lang of LANGS) {
+    meta.summary[lang] = markdown((parts[lang] || []).join('\n'), `${meta.slug}-${lang}`);
+  }
+  for (const k of ['title_ar', 'title_th', 'title_ms', 'author_ar', 'author_th', 'author_ms', 'category']) {
+    if (!meta[k]) console.warn(`  ! ${path.basename(file)}: missing "${k}"`);
+  }
+  return meta;
+}
+
+const categories = JSON.parse(fs.readFileSync(path.join(ROOT, 'categories.json'), 'utf8'));
+const books = fs.readdirSync(path.join(ROOT, 'books'))
+  .filter(f => f.endsWith('.md') && !f.startsWith('_'))
+  .map(f => parseBook(path.join(ROOT, 'books', f)))
+  .sort((a, b) => (b.added || '').localeCompare(a.added || '') || a.slug.localeCompare(b.slug));
+
+// A ready-made PDF in pdf/<slug>-<lang>.pdf wins; otherwise one is generated with --pdf.
+fs.rmSync(DIST, { recursive: true, force: true });
+fs.mkdirSync(path.join(DIST, 'pdf'), { recursive: true });
+const wantPdf = process.argv.includes('--pdf');
+for (const b of books) {
+  b.pdf = {};
+  for (const lang of LANGS) {
+    const name = `${b.slug}-${lang}.pdf`;
+    const own = path.join(ROOT, 'pdf', name);
+    if (fs.existsSync(own)) fs.copyFileSync(own, path.join(DIST, 'pdf', name));
+  }
+}
+
+// ---------- write site ----------
+function writeSite() {
+for (const b of books) for (const lang of LANGS) {
+  const name = `${b.slug}-${lang}.pdf`;
+  if (fs.existsSync(path.join(DIST, 'pdf', name))) b.pdf[lang] = `pdf/${name}`;
+}
+const template = fs.readFileSync(path.join(ROOT, 'src', 'template.html'), 'utf8');
+const data = JSON.stringify({ categories, books }).replace(/</g, '\\u003c');
+const body = template.replace('/*__DATA__*/', () => data);
+const page = `<!doctype html>\n<html lang="th">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n${body.split('</style>')[0]}</style>\n</head>\n<body>\n${body.split('</style>').slice(1).join('</style>')}\n</body>\n</html>\n`;
+fs.writeFileSync(path.join(DIST, 'index.html'), page);
+fs.writeFileSync(path.join(DIST, 'preview.html'), body); // body-only copy, used for the claude.ai preview
+fs.writeFileSync(path.join(DIST, '.nojekyll'), '');
+console.log(`Built ${books.length} books → dist/index.html`);
+}
+
+// ---------- PDFs ----------
+if (wantPdf) {
+  let chromium;
+  try { ({ chromium } = await import('playwright')); } catch {
+    try { const { createRequire } = await import('node:module'); ({ chromium } = createRequire(import.meta.url)('playwright')); }
+    catch { console.warn('Playwright not installed: skipping PDFs (npm i -D playwright)'); }
+  }
+  if (chromium) {
+  const cat = id => categories.find(c => c.id === id) || {};
+  const browser = await chromium.launch();
+  const tab = await browser.newPage();
+  for (const b of books) for (const lang of LANGS) {
+    const out = path.join(DIST, 'pdf', `${b.slug}-${lang}.pdf`);
+    if (fs.existsSync(out)) continue;
+    const rtl = lang === 'ms';
+    const html = `<!doctype html><html lang="${rtl ? 'ms-Arab' : 'th'}" dir="${rtl ? 'rtl' : 'ltr'}"><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;700&family=Noto+Sans+Thai:wght@400;700&display=swap">
+<style>@page{size:A5;margin:18mm 16mm}body{font-family:${rtl ? '"Noto Naskh Arabic","Amiri"' : '"Noto Sans Thai"'},serif;font-size:${rtl ? '12.5pt' : '11pt'};line-height:${rtl ? 2 : 1.7};color:#111}
+.ar{font-family:"Amiri",serif}.cover{text-align:center;padding:30mm 0 12mm;border-bottom:1px solid #999;margin-bottom:10mm}
+.cover .ttl{font-size:26pt;font-weight:700;display:block}.cover h1{font-size:16pt;margin:4mm 0}.cover p{margin:1mm 0;color:#444}
+blockquote{margin:4mm 0;padding:2mm 4mm;border-inline-start:2px solid #a87422;background:#f6f1e6}h2{font-size:13pt;margin-top:8mm}
+.foot{margin-top:12mm;font-size:9pt;color:#666;text-align:center}</style></head><body>
+<div class="cover"><span class="ar ttl" dir="rtl">${esc(b.title_ar)}</span><h1>${esc(b['title_' + lang])}</h1>
+<p>${esc(b['author_' + lang])}</p><p class="ar" dir="rtl">${esc(b.author_ar)}</p><p>${esc(cat(b.category)[lang] || '')}</p></div>
+${b.summary[lang].html}
+<p class="foot">Khulasah Islam · خلاصة إسلام</p></body></html>`;
+    await tab.setContent(html, { waitUntil: 'networkidle' });
+    await tab.evaluate(() => document.fonts.ready);
+    await tab.pdf({ path: out, format: 'A5', printBackground: true, preferCSSPageSize: true });
+    console.log(`  pdf → ${path.relative(ROOT, out)}`);
+  }
+  await browser.close();
+  }
+}
+writeSite();

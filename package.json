@@ -1,0 +1,12 @@
+{
+  "name": "khulasah-islam",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "build:pdf": "node build.mjs --pdf"
+  },
+  "devDependencies": {
+    "playwright": "1.48.2"
+  }
+}
