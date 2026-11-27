@@ -134,7 +134,8 @@ body.ms .byline { font-family: var(--font-jawi); }
 .book-cover .cover.gen .tt { font-size: clamp(.9rem, 2.6vw, 1.15rem); }
 .book-cover .cover.gen .by { font-size: .85rem; }
 .book-cover .cover.gen .seal img { height: 46px; }
-.downloads { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 24px 0 26px; }
+.downloads { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 24px 0 26px; }
+.dl-note { color: var(--muted); font-size: .85rem; }
 .dl { display: inline-flex; align-items: center; gap: 10px; background: var(--action); color: var(--action-ink); text-decoration: none; border-radius: 8px; padding: 8px 20px; font-family: var(--font-head); font-weight: 600; box-shadow: 0 3px 10px rgba(181,80,59,.28); }
 body.ms .dl { font-family: var(--font-jawi); }
 .dl.alt { background: transparent; color: var(--action); box-shadow: none; border: 1px solid var(--action); }
@@ -215,7 +216,7 @@ footer img { height: 44px; width: auto; filter: brightness(0) invert(1); opacity
       latest: 'หนังสือล่าสุด', seeAll: 'ดูทั้งหมด', allBooks: 'หนังสือทั้งหมด', related: 'หนังสือที่อาจสนใจ',
       all: 'ทั้งหมด', count: n => `${n} เล่ม`, sample: 'ตัวอย่าง', none: 'ไม่พบหนังสือที่ค้นหา',
       bookBy: 'หนังสือโดย', summarizer: 'สรุปแปลโดย',
-      download: 'ดาวน์โหลด', readIn: 'อ่านสรุปเป็นภาษา',
+      download: 'ดาวน์โหลด', bothLangs: 'PDF เล่มเดียว มีทั้งภาษาไทยและยาวี', readIn: 'อ่านสรุปเป็นภาษา',
       sampleNote: 'รายการนี้เป็นตัวอย่างเพื่อแสดงหน้าตาเว็บไซต์ เนื้อหาสรุปยังไม่ใช่ฉบับจริง',
       aboutTitle: 'เกี่ยวกับ Khulasah Islamiah',
       aboutLead: 'Khulasah Islamiah (خلاصة إسلامية) รวบรวมสรุปแปลกิตาบภาษาอาหรับ เพื่อให้ผู้อ่านทั่วไปเข้าถึงเนื้อหาสำคัญได้ง่ายขึ้น',
@@ -234,7 +235,7 @@ footer img { height: 44px; width: auto; filter: brightness(0) invert(1); opacity
       latest: 'کيتاب ترباهارو', seeAll: 'ليهت سموا', allBooks: 'سموا کيتاب', related: 'کيتاب لاٴين',
       all: 'سموا', count: n => `${n} بواه کيتاب`, sample: 'چونتوه', none: 'تيادا کيتاب دجومڤاٴي',
       bookBy: 'کارڠن', summarizer: 'ريڠکسن اوليه',
-      download: 'موات تورون', readIn: 'باچ ريڠکسن دالم بهاس',
+      download: 'موات تورون', bothLangs: 'ساتو فايل PDF، بهاس تاي دان جاوي', readIn: 'باچ ريڠکسن دالم بهاس',
       sampleNote: 'اين چونتوه سهاج اونتوق منونجوقکن روڤا لامن. ايسي ريڠکسن بلوم لاݢي ناسخه سبنر.',
       aboutTitle: 'تنتڠ Khulasah Islamiah',
       aboutLead: 'Khulasah Islamiah (خلاصة إسلامية) مڠومڤولکن ريڠکسن ترجمهن کيتاب عرب سوڤايا ڤمباچ عموم لبيه موده ممهمي ايسيڽ.',
@@ -319,8 +320,7 @@ footer img { height: 44px; width: auto; filter: brightness(0) invert(1); opacity
     const rl = readLang || ui;
     const s = b.summary[rl] || { html: '' };
     const langName = l => T[ui]['lang_' + l];
-    const dls = ['th', 'ms'].filter(l => b.pdf && b.pdf[l]).sort((a, c) => (a === rl ? -1 : c === rl ? 1 : 0))
-      .map((l, i) => `<a class="dl${i ? ' alt' : ''}" href="${esc(b.pdf[l])}" download target="_blank" rel="noopener">${esc(t('download'))} ${DL_ICON}<small>${esc(langName(l))}</small></a>`).join('');
+    const dls = b.pdf ? `<a class="dl" href="${esc(b.pdf)}" download target="_blank" rel="noopener">${esc(t('download'))} ${DL_ICON}</a><span class="dl-note">${esc(t('bothLangs'))}</span>` : '';
     const related = BOOKS.filter(x => x !== b).sort((x, y) => (y.category === b.category) - (x.category === b.category)).slice(0, 4);
     const desc = L(b, 'description');
     view.innerHTML = `<div class="wrap narrow">

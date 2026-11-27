@@ -1,6 +1,6 @@
 // Khulasah Islamiah — static site builder (no dependencies).
 // Usage:  node build.mjs          -> builds dist/ (website)
-//         node build.mjs --pdf    -> also renders dist/pdf/*.pdf with Playwright (if installed)
+//         node build.mjs --pdf    -> also renders one two-language dist/pdf/<slug>.pdf per book with Playwright (if installed)
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -86,27 +86,20 @@ const books = fs.readdirSync(path.join(ROOT, 'books'))
   .map(f => parseBook(path.join(ROOT, 'books', f)))
   .sort((a, b) => (b.added || '').localeCompare(a.added || '') || a.slug.localeCompare(b.slug));
 
-// A ready-made PDF in pdf/<slug>-<lang>.pdf wins; otherwise one is generated with --pdf.
+// One PDF per book holding both languages. A ready-made pdf/<slug>.pdf wins; otherwise one is generated with --pdf.
 fs.rmSync(DIST, { recursive: true, force: true });
 fs.mkdirSync(path.join(DIST, 'pdf'), { recursive: true });
 for (const dir of ['assets', 'covers']) if (fs.existsSync(path.join(ROOT, dir))) fs.cpSync(path.join(ROOT, dir), path.join(DIST, dir), { recursive: true, filter: f => !f.endsWith('logo-original.png') });
 for (const b of books) if (b.cover && !fs.existsSync(path.join(ROOT, b.cover))) { console.warn(`  ! ${b.slug}: cover not found: ${b.cover}`); delete b.cover; }
 const wantPdf = process.argv.includes('--pdf');
 for (const b of books) {
-  b.pdf = {};
-  for (const lang of LANGS) {
-    const name = `${b.slug}-${lang}.pdf`;
-    const own = path.join(ROOT, 'pdf', name);
-    if (fs.existsSync(own)) fs.copyFileSync(own, path.join(DIST, 'pdf', name));
-  }
+  const own = path.join(ROOT, 'pdf', `${b.slug}.pdf`);
+  if (fs.existsSync(own)) fs.copyFileSync(own, path.join(DIST, 'pdf', `${b.slug}.pdf`));
 }
 
 // ---------- write site ----------
 function writeSite() {
-for (const b of books) for (const lang of LANGS) {
-  const name = `${b.slug}-${lang}.pdf`;
-  if (fs.existsSync(path.join(DIST, 'pdf', name))) b.pdf[lang] = `pdf/${name}`;
-}
+for (const b of books) if (fs.existsSync(path.join(DIST, 'pdf', `${b.slug}.pdf`))) b.pdf = `pdf/${b.slug}.pdf`;
 const template = fs.readFileSync(path.join(ROOT, 'src', 'template.html'), 'utf8');
 const data = JSON.stringify({ categories, books }).replace(/</g, '\\u003c');
 const body = template.replace('/*__DATA__*/', () => data);
@@ -129,21 +122,37 @@ if (wantPdf) {
   const LOGO64 = fs.readFileSync(path.join(ROOT, 'assets', 'logo-mark.png')).toString('base64');
   const browser = await chromium.launch();
   const tab = await browser.newPage();
-  for (const b of books) for (const lang of LANGS) {
-    const out = path.join(DIST, 'pdf', `${b.slug}-${lang}.pdf`);
+  const HEAD = { th: 'ภาษาไทย', ms: 'بهاس ملايو (جاوي)' };
+  for (const b of books) {
+    const out = path.join(DIST, 'pdf', `${b.slug}.pdf`);
     if (fs.existsSync(out)) continue;
-    const rtl = lang === 'ms';
-    const html = `<!doctype html><html lang="${rtl ? 'ms-Arab' : 'th'}" dir="${rtl ? 'rtl' : 'ltr'}"><head><meta charset="utf-8">
+    const part = lang => {
+      const rtl = lang === 'ms';
+      return `<section class="part ${lang}" lang="${rtl ? 'ms-Arab' : 'th'}" dir="${rtl ? 'rtl' : 'ltr'}">
+<div class="parthead"><span class="ttl2">${esc(b['title_' + lang] || '')}</span><span class="lang">${HEAD[lang]}</span></div>
+${b.summary[lang].html}</section>`;
+    };
+    const html = `<!doctype html><html lang="th"><head><meta charset="utf-8">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;700&family=Noto+Sans+Thai:wght@400;700&display=swap">
-<style>@page{size:A5;margin:18mm 16mm}body{font-family:${rtl ? '"Noto Naskh Arabic","Amiri"' : '"Noto Sans Thai"'},serif;font-size:${rtl ? '12.5pt' : '11pt'};line-height:${rtl ? 2 : 1.7};color:#111}
-.ar{font-family:"Amiri",serif}.cover{text-align:center;padding:14mm 0 10mm;border-bottom:1px solid #999;margin-bottom:10mm}
-.cover .ttl{font-size:26pt;font-weight:700;display:block}.cover h1{font-size:16pt;margin:4mm 0}.cover p{margin:1mm 0;color:#444}
-blockquote{margin:4mm 0;padding:2mm 4mm;border-inline-start:2px solid #a87422;background:#f6f1e6}h2{font-size:13pt;margin-top:8mm}
-.foot{margin-top:12mm;font-size:9pt;color:#666;text-align:center}</style></head><body>
-<div class="cover"><img src="data:image/png;base64,${LOGO64}" style="height:22mm;margin-bottom:6mm" alt=""><br><span class="ar ttl" dir="rtl">${esc(b.title_ar)}</span><h1>${esc(b['title_' + lang])}</h1>
-<p>${esc(b['author_' + lang])}</p><p class="ar" dir="rtl">${esc(b.author_ar)}</p><p>${esc(cat(b.category)[lang] || '')}</p></div>
-${b.summary[lang].html}
-<p class="foot">Khulasah Islamiah · خلاصة إسلامية</p></body></html>`;
+<style>@page{size:A5;margin:18mm 16mm}body{font-family:"Noto Sans Thai",sans-serif;font-size:11pt;line-height:1.7;color:#111;margin:0}
+.ar{font-family:"Amiri",serif}
+.cover{text-align:center;height:170mm;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2mm;page-break-after:always}
+.cover .ttl{font-size:28pt;font-weight:700;line-height:1.5}.cover .rule{width:50%;border-top:1px solid #999;margin:4mm 0}
+.cover .th{font-size:15pt;font-weight:700}.cover .ms{font-family:"Noto Naskh Arabic","Amiri",serif;font-size:15pt;font-weight:700}
+.cover p{margin:0;color:#444}.cover .brand{margin-top:10mm;font-size:9pt;color:#02381b}
+.part{page-break-before:always}.part.ms{font-family:"Noto Naskh Arabic","Amiri",serif;font-size:12.5pt;line-height:2}
+.parthead{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #02381b;padding-bottom:2mm;margin-bottom:4mm;color:#02381b}
+.parthead .ttl2{font-weight:700;font-size:13pt}.parthead .lang{font-size:9pt}
+blockquote{margin:4mm 0;padding:2mm 4mm;border-inline-start:2px solid #b5503b;background:#f6f1e6}h2{font-size:13pt;margin-top:7mm}</style></head><body>
+<div class="cover"><img src="data:image/png;base64,${LOGO64}" style="height:24mm;margin-bottom:6mm" alt="">
+<span class="ar ttl" dir="rtl">${esc(b.title_ar)}</span><p class="ar" dir="rtl">${esc(b.author_ar)}</p>
+<span class="rule"></span>
+<span class="th">${esc(b.title_th)}</span><p>${esc(b.author_th)}</p>
+<span class="ms" dir="rtl">${esc(b.title_ms)}</span><p class="ms" dir="rtl" style="font-weight:400;font-size:11pt">${esc(b.author_ms)}</p>
+<span class="brand">Khulasah Islamiah · <span class="ar">خلاصة إسلامية</span></span></div>
+${part('th')}
+${part('ms')}
+</body></html>`;
     await tab.setContent(html, { waitUntil: 'networkidle' });
     await tab.evaluate(() => document.fonts.ready);
     await tab.pdf({ path: out, format: 'A5', printBackground: true, preferCSSPageSize: true });
