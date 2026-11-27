@@ -1,4 +1,4 @@
-// Khulasah Islam — static site builder (no dependencies).
+// Khulasah Islamiah — static site builder (no dependencies).
 // Usage:  node build.mjs          -> builds dist/ (website)
 //         node build.mjs --pdf    -> also renders dist/pdf/*.pdf with Playwright (if installed)
 import fs from 'node:fs';
@@ -89,6 +89,8 @@ const books = fs.readdirSync(path.join(ROOT, 'books'))
 // A ready-made PDF in pdf/<slug>-<lang>.pdf wins; otherwise one is generated with --pdf.
 fs.rmSync(DIST, { recursive: true, force: true });
 fs.mkdirSync(path.join(DIST, 'pdf'), { recursive: true });
+for (const dir of ['assets', 'covers']) if (fs.existsSync(path.join(ROOT, dir))) fs.cpSync(path.join(ROOT, dir), path.join(DIST, dir), { recursive: true, filter: f => !f.endsWith('logo-original.png') });
+for (const b of books) if (b.cover && !fs.existsSync(path.join(ROOT, b.cover))) { console.warn(`  ! ${b.slug}: cover not found: ${b.cover}`); delete b.cover; }
 const wantPdf = process.argv.includes('--pdf');
 for (const b of books) {
   b.pdf = {};
@@ -124,6 +126,7 @@ if (wantPdf) {
   }
   if (chromium) {
   const cat = id => categories.find(c => c.id === id) || {};
+  const LOGO64 = fs.readFileSync(path.join(ROOT, 'assets', 'logo-mark.png')).toString('base64');
   const browser = await chromium.launch();
   const tab = await browser.newPage();
   for (const b of books) for (const lang of LANGS) {
@@ -133,14 +136,14 @@ if (wantPdf) {
     const html = `<!doctype html><html lang="${rtl ? 'ms-Arab' : 'th'}" dir="${rtl ? 'rtl' : 'ltr'}"><head><meta charset="utf-8">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;700&family=Noto+Sans+Thai:wght@400;700&display=swap">
 <style>@page{size:A5;margin:18mm 16mm}body{font-family:${rtl ? '"Noto Naskh Arabic","Amiri"' : '"Noto Sans Thai"'},serif;font-size:${rtl ? '12.5pt' : '11pt'};line-height:${rtl ? 2 : 1.7};color:#111}
-.ar{font-family:"Amiri",serif}.cover{text-align:center;padding:30mm 0 12mm;border-bottom:1px solid #999;margin-bottom:10mm}
+.ar{font-family:"Amiri",serif}.cover{text-align:center;padding:14mm 0 10mm;border-bottom:1px solid #999;margin-bottom:10mm}
 .cover .ttl{font-size:26pt;font-weight:700;display:block}.cover h1{font-size:16pt;margin:4mm 0}.cover p{margin:1mm 0;color:#444}
 blockquote{margin:4mm 0;padding:2mm 4mm;border-inline-start:2px solid #a87422;background:#f6f1e6}h2{font-size:13pt;margin-top:8mm}
 .foot{margin-top:12mm;font-size:9pt;color:#666;text-align:center}</style></head><body>
-<div class="cover"><span class="ar ttl" dir="rtl">${esc(b.title_ar)}</span><h1>${esc(b['title_' + lang])}</h1>
+<div class="cover"><img src="data:image/png;base64,${LOGO64}" style="height:22mm;margin-bottom:6mm" alt=""><br><span class="ar ttl" dir="rtl">${esc(b.title_ar)}</span><h1>${esc(b['title_' + lang])}</h1>
 <p>${esc(b['author_' + lang])}</p><p class="ar" dir="rtl">${esc(b.author_ar)}</p><p>${esc(cat(b.category)[lang] || '')}</p></div>
 ${b.summary[lang].html}
-<p class="foot">Khulasah Islam · خلاصة إسلام</p></body></html>`;
+<p class="foot">Khulasah Islamiah · خلاصة إسلامية</p></body></html>`;
     await tab.setContent(html, { waitUntil: 'networkidle' });
     await tab.evaluate(() => document.fonts.ready);
     await tab.pdf({ path: out, format: 'A5', printBackground: true, preferCSSPageSize: true });

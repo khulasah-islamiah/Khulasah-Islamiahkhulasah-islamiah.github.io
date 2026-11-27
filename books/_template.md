@@ -11,6 +11,9 @@ author_ms: نام ڤڠارڠ
 summarizer_th: ชื่อผู้สรุปแปล
 summarizer_ms: نام ڤڽوسون
 added: 2026-12-01
+cover: covers/ชื่อไฟล์ภาพปก.jpg
+description_th: คำแนะนำหนังสือสั้น ๆ 2–4 บรรทัด แสดงใต้ปุ่มดาวน์โหลด
+description_ms: ڤڠنالن ريڠکس کيتاب
 ---
 === th ===
 ## หัวข้อที่ 1
