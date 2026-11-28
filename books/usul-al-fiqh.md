@@ -1,5 +1,6 @@
 ---
 slug: usul-al-fiqh
+status: review
 sample: false
 category: usul
 title_ar: علم أصول الفقه

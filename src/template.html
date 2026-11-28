@@ -142,6 +142,12 @@ body.ms .dl { font-family: var(--font-jawi); }
 .dl.alt { background: transparent; color: var(--action); box-shadow: none; border: 1px solid var(--action); }
 .dl svg { width: 18px; height: 18px; }
 .dl small { font-weight: 400; opacity: .85; font-size: .82rem; }
+.review-box { background: #f4e7c4; color: #4a3610; border-radius: 8px; padding: 12px 16px; margin: 0 0 22px; display: grid; gap: 8px; justify-items: start; }
+.review-box p { margin: 0; }
+.review-box .dl.alt { color: #8a3a28; border-color: #8a3a28; }
+.review-lead { color: var(--muted); margin: -6px 0 16px; max-width: 75ch; }
+table.admin { width: 100%; border-collapse: collapse; font-size: .95rem; }
+table.admin th, table.admin td { text-align: start; padding: 6px 8px; border-bottom: 1px solid var(--line); }
 .notice { background: #f4e7c4; color: #4a3610; border-radius: 8px; padding: 10px 14px; font-size: .95rem; margin-bottom: 20px; }
 .description { margin: 0 0 8px; }
 .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin: 30px 0 6px; }
@@ -182,6 +188,7 @@ footer img { height: 44px; width: auto; filter: brightness(0) invert(1); opacity
       <nav class="nav" aria-label="Main">
         <a href="#home" data-nav="home" data-i18n="nav_home"></a>
         <a href="#books" data-nav="books" data-i18n="nav_books"></a>
+        <a href="#review" data-nav="review" data-i18n="nav_review"></a>
         <a href="#about" data-nav="about" data-i18n="nav_about"></a>
         <span class="langswitch" role="group" aria-label="Language">
           <button type="button" id="ui-th" data-lang="th">ไทย</button>
@@ -210,7 +217,12 @@ footer img { height: 44px; width: auto; filter: brightness(0) invert(1); opacity
   const T = {
     th: {
       slogan: 'คลังสรุปแปลหนังสืออิสลาม ภาษาไทยและมลายูยาวี',
-      nav_home: 'หน้าหลัก', nav_books: 'หนังสือ', nav_about: 'เกี่ยวกับเรา',
+      nav_home: 'หน้าหลัก', nav_books: 'หนังสือ', nav_review: 'ก่อนตรวจทาน', nav_about: 'เกี่ยวกับเรา',
+      reviewTitle: 'หนังสือก่อนตรวจทาน', reviewBadge: 'ก่อนตรวจทาน',
+      reviewLead: 'หนังสือในหมวดนี้ยังไม่ได้ตรวจทานทางภาษา อ่านและดาวน์โหลดได้ แต่อาจมีจุดที่ต้องแก้ไข ผู้ตรวจทานหลักคือทีมนักศึกษากฎหมายชารีอะห์อิสลาม สถาบันรัชต์ภาคย์ วิทยาเขตยะลา และผู้อ่านทุกท่านช่วยแจ้งจุดที่ควรแก้ไขได้ เมื่อตรวจทานเสร็จ หนังสือจะย้ายไปอยู่ในหมวดหนังสือ',
+      reviewNote: 'ฉบับนี้ยังไม่ได้ตรวจทานทางภาษา ผู้ตรวจทานหลักคือทีมนักศึกษากฎหมายชารีอะห์อิสลาม สถาบันรัชต์ภาคย์ วิทยาเขตยะลา หากพบจุดที่ควรแก้ไข ช่วยแจ้งเราได้',
+      reportBtn: 'แจ้งจุดที่ควรแก้ไข', seeReview: 'ดูหนังสือก่อนตรวจทาน',
+      noPublished: 'ยังไม่มีหนังสือที่ตรวจทานเสร็จแล้ว ระหว่างนี้อ่านหนังสือได้ในหมวดก่อนตรวจทาน',
       heroTitle: 'สรุปแปลหนังสืออิสลามจากภาษาอาหรับ',
       heroText: 'อ่านสรุปเนื้อหากิตาบสำคัญเป็นภาษาไทยและภาษามลายูอักษรยาวี อ่านออนไลน์หรือดาวน์โหลด PDF ได้ฟรี',
       search: 'ค้นหาชื่อหนังสือ ผู้แต่ง หรือชื่อภาษาอาหรับ',
@@ -229,7 +241,12 @@ footer img { height: 44px; width: auto; filter: brightness(0) invert(1); opacity
     },
     ms: {
       slogan: 'ڤوست ريڠکسن ترجمهن کيتاب اسلام، بهاس تاي دان جاوي',
-      nav_home: 'لامن اوتام', nav_books: 'کيتاب', nav_about: 'تنتڠ کامي',
+      nav_home: 'لامن اوتام', nav_books: 'کيتاب', nav_review: 'سبلوم دسيمق', nav_about: 'تنتڠ کامي',
+      reviewTitle: 'کتاب سبلوم دسيمق', reviewBadge: 'سبلوم دسيمق',
+      reviewLead: 'کتاب دالم باهاݢين اين بلوم دسيمق بهاسڽ. اي بوليه دباچ دان دموات تورون، تتاڤي موڠکين اد يڠ ڤرلو دبتولکن. ڤڽيمق اوتام اياله ڤاسوقن ڤلاجر اوندڠ٢ شريعة اسلام، Rajapark Institute کمڤوس يالا، دان سموا ڤمباچ بوليه ممبنتو ممبريتاهو کسالهن. سلڤس دسيمق، کتاب اکن دڤينده کباهاݢين کتاب.',
+      reviewNote: 'ناسخه اين بلوم دسيمق بهاسڽ. ڤڽيمق اوتام اياله ڤاسوقن ڤلاجر اوندڠ٢ شريعة اسلام، Rajapark Institute کمڤوس يالا. جک اندا منموکن کسالهن، سيلا بريتاهو کامي.',
+      reportBtn: 'لاڤورکن کسالهن', seeReview: 'ليهت کتاب سبلوم دسيمق',
+      noPublished: 'بلوم اد کتاب يڠ سلساي دسيمق. سيلا باچ کتاب دالم باهاݢين سبلوم دسيمق.',
       heroTitle: 'ريڠکسن ترجمهن کيتاب٢ اسلام درڤد بهاس عرب',
       heroText: 'باچ ريڠکسن کيتاب٢ ڤنتيڠ دالم بهاس تاي دان بهاس ملايو توليسن جاوي. باچ دالم تالين اتاو موات تورون PDF دڠن ڤرچوما.',
       search: 'چاري نام کيتاب، ڤڠارڠ اتاو تاجوق عرب',
@@ -256,68 +273,80 @@ footer img { height: 44px; width: auto; filter: brightness(0) invert(1); opacity
   const t = k => T[ui][k];
   // Thai has no spaces between words, and browsers sometimes split a word in the middle.
   // Titles and names may only wrap at the spaces the author typed.
-  const nb = s => String(s ?? '').split(/ +(?!\d)/).map(w => `<span class="nw">${esc(w)}</span>`).join(' ');
+  const nb = s => String(s ?? '').split(/ +(?!\d)/).map(w => w.length > 30 ? esc(w) : `<span class="nw">${esc(w)}</span>`).join(' ');
   const catName = id => (CATS.find(c => c.id === id) || {})[ui] || id;
   const L = (b, k) => (ui === 'ms' ? b[k + '_ms'] : b[k + '_th']) || b[k + '_th'] || '';
   const view = document.getElementById('view');
 
+  const SITE = DATA.site || {};
+  const isReview = b => b.status === 'review';
+  let shelf = 'books';
+
   function cover(b, opts = {}) {
     const badge = opts.badge === false ? '' : `<span class="badge">${esc(catName(b.category))}</span>`;
-    const sample = b.sample ? `<span class="sample">${esc(t('sample'))}</span>` : '';
-    if (b.cover) return `<div class="cover"><img class="photo" src="${esc(b.cover)}" alt="${esc(b.title_ar)}" loading="lazy">${sample}${badge}</div>`;
+    const flag = isReview(b) ? `<span class="sample">${esc(t('reviewBadge'))}</span>` : (b.sample ? `<span class="sample">${esc(t('sample'))}</span>` : '');
+    if (b.cover) return `<div class="cover"><img class="photo" src="${esc(b.cover)}" alt="${esc(b.title_ar)}" loading="lazy">${flag}${badge}</div>`;
     return `<div class="cover gen" style="--c:${COVERS[b.category] || 'var(--cover-a)'}">
       <span class="ar" dir="rtl" lang="ar">${esc(b.title_ar)}</span>
       <span class="rule"></span>
       <span><span class="tt${ui === 'ms' ? ' jawi' : ''}">${nb(L(b, 'title'))}</span><br><span class="by">${nb(L(b, 'author'))}</span></span>
-      <span class="seal"><img src="assets/logo-mark.png" alt=""></span>${sample}${badge}</div>`;
+      <span class="seal"><img src="assets/logo-mark.png" alt=""></span>${flag}${badge}</div>`;
   }
   const card = b => `<a class="card" href="#${esc(b.slug)}">${cover(b)}<span class="t">${nb(L(b, 'title'))}</span><span class="a">${esc(L(b, 'author'))}</span></a>`;
+  const onShelf = (b, which = shelf) => (which === 'review') === isReview(b);
+  const reportBtn = () => SITE.feedback_url ? `<a class="dl alt" href="${esc(SITE.feedback_url)}" target="_blank" rel="noopener">${esc(t('reportBtn'))}</a>` : '';
 
   function matches(b) {
+    if (!onShelf(b)) return false;
     if (cat !== 'all' && b.category !== cat) return false;
     if (!q) return true;
     return [b.title_ar, b.title_th, b.title_ms, b.author_ar, b.author_th, b.author_ms, b.slug].join(' ').toLowerCase().includes(q.toLowerCase());
   }
   function chips() {
-    const n = id => BOOKS.filter(b => id === 'all' || b.category === id).length;
+    const n = id => BOOKS.filter(b => onShelf(b) && (id === 'all' || b.category === id)).length;
+    if (!n('all')) return '';
     return `<div class="filters" role="group">${[{ id: 'all' }, ...CATS.filter(c => n(c.id))].map(c =>
       `<button type="button" class="chip" aria-pressed="${cat === c.id}" data-cat="${c.id}">${esc(c.id === 'all' ? t('all') : catName(c.id))}<span class="n">${n(c.id)}</span></button>`).join('')}</div>`;
   }
   function bindChips(rerender) { view.querySelectorAll('.chip').forEach(el => el.onclick = () => { cat = el.dataset.cat; rerender(); }); }
   function bindSearch() {
     const input = document.getElementById('q');
-    if (input) input.addEventListener('input', e => { q = e.target.value.trim(); if (location.hash !== '#books') location.hash = 'books'; else drawBookList(); });
+    if (input) input.addEventListener('input', e => { q = e.target.value.trim(); drawBookList(); });
   }
 
   function renderHome() {
+    const pub = BOOKS.filter(b => !isReview(b)), rev = BOOKS.filter(isReview);
     view.innerHTML = `<div class="wrap">
       <section class="hero">
         <img src="assets/logo.png" alt="Khulasah Islamiah">
-        <div><h1>${nb(t('heroTitle'))}</h1><p>${esc(t('heroText'))}</p>
-          <div class="search"><input id="q" type="search" autocomplete="off" placeholder="${esc(t('search'))}" value="${esc(q)}"></div></div>
+        <div><h1>${nb(t('heroTitle'))}</h1><p>${esc(t('heroText'))}</p></div>
       </section>
-      ${chips()}
-      <div class="section-head"><h2>${esc(t('latest'))}</h2><a href="#books">${esc(t('seeAll'))} ›</a></div>
-      <div class="grid">${BOOKS.filter(matches).slice(0, 8).map(card).join('')}</div>
+      ${pub.length ? `<div class="section-head"><h2>${esc(t('latest'))}</h2><a href="#books">${esc(t('seeAll'))} ›</a></div>
+      <div class="grid">${pub.slice(0, 8).map(card).join('')}</div>` : ''}
+      ${rev.length ? `<div class="section-head"><h2>${esc(t('reviewTitle'))}</h2><a href="#review">${esc(t('seeAll'))} ›</a></div>
+      <p class="review-lead">${esc(t('reviewLead'))}</p>
+      <div class="grid">${rev.slice(0, 8).map(card).join('')}</div>` : ''}
     </div>`;
-    bindChips(() => { location.hash = 'books'; });
-    bindSearch();
   }
 
   function drawBookList() {
     const list = BOOKS.filter(matches);
-    document.getElementById('list').innerHTML = list.length ? `<div class="grid">${list.map(card).join('')}</div>` : `<p class="empty">${esc(t('none'))}</p>`;
+    const empty = shelf === 'books' && !BOOKS.some(b => onShelf(b)) && !q
+      ? `<p class="empty">${esc(t('noPublished'))} <a href="#review">${esc(t('seeReview'))} ›</a></p>`
+      : `<p class="empty">${esc(t('none'))}</p>`;
+    document.getElementById('list').innerHTML = list.length ? `<div class="grid">${list.map(card).join('')}</div>` : empty;
     document.getElementById('count').textContent = t('count')(list.length);
   }
-  function renderBooks() {
+  function renderShelf(which) {
+    if (shelf !== which) { shelf = which; cat = 'all'; q = ''; }
     view.innerHTML = `<div class="wrap">
-      <div class="section-head"><h2>${esc(t('allBooks'))}</h2><span id="count" class="byline"></span></div>
+      <div class="section-head"><h2>${esc(t(which === 'review' ? 'reviewTitle' : 'allBooks'))}</h2><span id="count" class="byline"></span></div>
+      ${which === 'review' ? `<div class="review-box"><p>${esc(t('reviewLead'))}</p>${reportBtn()}</div>` : ''}
       <div class="search" style="margin-bottom:16px"><input id="q" type="search" autocomplete="off" placeholder="${esc(t('search'))}" value="${esc(q)}"></div>
       ${chips()}<div id="list"></div></div>`;
-    bindChips(renderBooks);
+    bindChips(() => renderShelf(which));
     bindSearch();
     drawBookList();
-    const input = document.getElementById('q'); if (q && input) { input.focus(); input.setSelectionRange(q.length, q.length); }
   }
 
   function renderBook(b) {
@@ -325,12 +354,13 @@ footer img { height: 44px; width: auto; filter: brightness(0) invert(1); opacity
     const s = b.summary[rl] || { html: '' };
     const langName = l => T[ui]['lang_' + l];
     const dls = b.pdf ? `<a class="dl" href="${esc(b.pdf)}" download target="_blank" rel="noopener">${esc(t('download'))} ${DL_ICON}</a><span class="dl-note">${esc(t('bothLangs'))}</span>` : '';
-    const related = BOOKS.filter(x => x !== b).sort((x, y) => (y.category === b.category) - (x.category === b.category)).slice(0, 4);
+    const related = BOOKS.filter(x => x !== b && isReview(x) === isReview(b)).sort((x, y) => (y.category === b.category) - (x.category === b.category)).slice(0, 4);
     const desc = L(b, 'description');
     view.innerHTML = `<div class="wrap narrow">
       <h1 class="book-title">${nb(L(b, 'title'))}</h1>
       <p class="byline">${esc(t('bookBy'))} ${nb(L(b, 'author'))} · <span class="ar" dir="rtl" lang="ar">${esc(b.title_ar)}</span>${b.added ? ` · <span style="font-variant-numeric:tabular-nums">${esc(b.added)}</span>` : ''}</p>
       <hr class="divider">
+      ${isReview(b) ? `<div class="review-box"><strong>${esc(t('reviewBadge'))}</strong><p>${esc(t('reviewNote'))}</p>${reportBtn()}</div>` : ''}
       <div class="book-cover">${cover(b, { badge: false })}</div>
       <div class="downloads">${dls}</div>
       ${b.sample ? `<div class="notice">${esc(t('sampleNote'))}</div>` : ''}
@@ -355,6 +385,17 @@ footer img { height: 44px; width: auto; filter: brightness(0) invert(1); opacity
       </div></div>`;
   }
 
+  // Admin page (not in the menu): lists every book with its status and links to the GitHub action that moves it.
+  function renderAdmin() {
+    const row = b => `<tr><td>${nb(b.title_th)}</td><td><code>${esc(b.slug)}</code></td><td>${isReview(b) ? 'ก่อนตรวจทาน' : 'หนังสือ (ตรวจทานแล้ว)'}</td></tr>`;
+    view.innerHTML = `<div class="wrap narrow about">
+      <h1>สำหรับแอดมิน</h1>
+      <p>ย้ายหนังสือระหว่างหมวด "ก่อนตรวจทาน" กับ "หนังสือ": กดปุ่มด้านล่าง แล้วกด <strong>Run workflow</strong> ใส่รหัสหนังสือ (คอลัมน์กลาง) เลือกหมวดปลายทาง แล้วกด Run workflow สีเขียว เว็บจะอัปเดตเองภายในไม่กี่นาที (ต้องเข้าสู่ระบบ GitHub ด้วยบัญชีแอดมิน)</p>
+      ${SITE.admin_url ? `<p><a class="dl" href="${esc(SITE.admin_url)}" target="_blank" rel="noopener">เปิดหน้าย้ายหมวดบน GitHub</a></p>` : ''}
+      <div style="overflow-x:auto"><table class="admin"><thead><tr><th>ชื่อหนังสือ</th><th>รหัส</th><th>หมวดตอนนี้</th></tr></thead><tbody>${BOOKS.map(row).join('')}</tbody></table></div>
+    </div>`;
+  }
+
   function applyUI() {
     document.documentElement.lang = ui === 'ms' ? 'ms-Arab' : 'th';
     document.documentElement.dir = ui === 'ms' ? 'rtl' : 'ltr';
@@ -367,10 +408,11 @@ footer img { height: 44px; width: auto; filter: brightness(0) invert(1); opacity
   function route() {
     const h = location.hash.slice(1) || 'home';
     const b = BOOKS.find(x => x.slug === h);
-    const section = b ? 'books' : (['books', 'about'].includes(h) ? h : 'home');
+    const section = b ? (isReview(b) ? 'review' : 'books') : (['books', 'review', 'about'].includes(h) ? h : 'home');
     document.querySelectorAll('[data-nav]').forEach(a => { if (a.dataset.nav === section) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
-    if (b) renderBook(b); else { readLang = null; if (h === 'books') renderBooks(); else if (h === 'about') renderAbout(); else renderHome(); }
-    if (h !== 'books') window.scrollTo(0, 0);
+    if (b) renderBook(b);
+    else { readLang = null; if (h === 'books' || h === 'review') renderShelf(h); else if (h === 'about') renderAbout(); else if (h === 'admin') renderAdmin(); else renderHome(); }
+    window.scrollTo(0, 0);
   }
 
   document.querySelectorAll('.langswitch button').forEach(el => el.onclick = () => { ui = el.dataset.lang; readLang = null; store.set('khulasah-ui', ui); applyUI(); route(); });

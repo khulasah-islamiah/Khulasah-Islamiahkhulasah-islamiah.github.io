@@ -1,5 +1,6 @@
 ---
 slug: al-risala-1
+status: review
 sample: false
 category: usul
 title_ar: الرسالة — الجزء الأول

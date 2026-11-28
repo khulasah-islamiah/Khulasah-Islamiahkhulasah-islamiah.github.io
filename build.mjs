@@ -63,6 +63,7 @@ function parseBook(file) {
   }
   meta.slug = meta.slug || path.basename(file, '.md');
   meta.sample = meta.sample === 'true';
+  meta.status = meta.status === 'review' ? 'review' : 'published'; // review = shown under "ก่อนตรวจทาน"
   const parts = {};
   let cur = null;
   for (const l of m[2].split('\n')) {
@@ -84,7 +85,7 @@ const categories = JSON.parse(fs.readFileSync(path.join(ROOT, 'categories.json')
 const books = fs.readdirSync(path.join(ROOT, 'books'))
   .filter(f => f.endsWith('.md') && !f.startsWith('_'))
   .map(f => parseBook(path.join(ROOT, 'books', f)))
-  .sort((a, b) => (a.sample - b.sample) || (b.added || '').localeCompare(a.added || '') || a.slug.localeCompare(b.slug));
+  .sort((a, b) => (a.sample - b.sample) || (b.added || '').localeCompare(a.added || '') || a.slug.localeCompare(b.slug, 'en', { numeric: true }));
 
 // One PDF per book holding both languages. A ready-made pdf/<slug>.pdf wins; otherwise one is generated with --pdf.
 fs.rmSync(DIST, { recursive: true, force: true });
@@ -101,7 +102,8 @@ for (const b of books) {
 function writeSite() {
 for (const b of books) if (fs.existsSync(path.join(DIST, 'pdf', `${b.slug}.pdf`))) b.pdf = `pdf/${b.slug}.pdf`;
 const template = fs.readFileSync(path.join(ROOT, 'src', 'template.html'), 'utf8');
-const data = JSON.stringify({ categories, books }).replace(/</g, '\\u003c');
+const site = fs.existsSync(path.join(ROOT, 'site.json')) ? JSON.parse(fs.readFileSync(path.join(ROOT, 'site.json'), 'utf8')) : {};
+const data = JSON.stringify({ site, categories, books }).replace(/</g, '\\u003c');
 const body = template.replace('/*__DATA__*/', () => data);
 const page = `<!doctype html>\n<html lang="th">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n${body.split('</style>')[0]}</style>\n</head>\n<body>\n${body.split('</style>').slice(1).join('</style>')}\n</body>\n</html>\n`;
 fs.writeFileSync(path.join(DIST, 'index.html'), page);

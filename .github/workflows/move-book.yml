@@ -1,0 +1,45 @@
+name: Move book (ก่อนตรวจทาน ↔ หนังสือ)
+on:
+  workflow_dispatch:
+    inputs:
+      book:
+        description: "รหัสหนังสือ (ดูได้ที่หน้า #admin ของเว็บ) เช่น al-risala-1"
+        required: true
+        type: string
+      to:
+        description: "ย้ายไปหมวด"
+        required: true
+        type: choice
+        default: published
+        options:
+          - published
+          - review
+permissions:
+  contents: write
+  actions: write
+jobs:
+  move:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Change status
+        env:
+          BOOK: ${{ inputs.book }}
+          TO: ${{ inputs.to }}
+        run: |
+          set -e
+          case "$BOOK" in *[!a-z0-9-]*|"") echo "รหัสหนังสือไม่ถูกต้อง: $BOOK"; exit 1;; esac
+          f="books/$BOOK.md"
+          [ -f "$f" ] || { echo "ไม่พบหนังสือรหัส $BOOK"; ls books; exit 1; }
+          if grep -q '^status:' "$f"; then sed -i "0,/^status:.*/s//status: $TO/" "$f"; else sed -i "0,/^sample:/s//status: $TO\nsample:/" "$f"; fi
+          grep -m1 '^status:' "$f"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$f"
+          git diff --cached --quiet && { echo "หนังสืออยู่ในหมวดนี้อยู่แล้ว"; exit 0; }
+          git commit -m "Move $BOOK to $TO"
+          git push
+      - name: Publish the site
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy.yml --ref main
