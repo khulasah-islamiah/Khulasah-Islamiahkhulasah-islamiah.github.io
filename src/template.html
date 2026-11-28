@@ -145,6 +145,9 @@ body.ms .dl { font-family: var(--font-jawi); }
 .review-box { background: #f4e7c4; color: #4a3610; border-radius: 8px; padding: 12px 16px; margin: 0 0 22px; display: grid; gap: 8px; justify-items: start; }
 .review-box p { margin: 0; }
 .review-box .dl.alt { color: #8a3a28; border-color: #8a3a28; }
+.comments { margin-top: 40px; padding-top: 6px; border-top: 1px solid var(--line); }
+.comments h2 { font-size: 1.3rem; }
+button.dl { cursor: pointer; font: inherit; }
 .review-lead { color: var(--muted); margin: -6px 0 16px; max-width: 75ch; }
 table.admin { width: 100%; border-collapse: collapse; font-size: .95rem; }
 table.admin th, table.admin td { text-align: start; padding: 6px 8px; border-bottom: 1px solid var(--line); }
@@ -221,7 +224,8 @@ footer img { height: 44px; width: auto; filter: brightness(0) invert(1); opacity
       reviewTitle: 'หนังสือก่อนตรวจทาน', reviewBadge: 'ก่อนตรวจทาน',
       reviewLead: 'หนังสือในหมวดนี้ยังไม่ได้ตรวจทานทางภาษา อ่านและดาวน์โหลดได้ แต่อาจมีจุดที่ต้องแก้ไข ผู้ตรวจทานหลักคือทีมนักศึกษากฎหมายชารีอะห์อิสลาม สถาบันรัชต์ภาคย์ วิทยาเขตยะลา และผู้อ่านทุกท่านช่วยแจ้งจุดที่ควรแก้ไขได้ เมื่อตรวจทานเสร็จ หนังสือจะย้ายไปอยู่ในหมวดหนังสือ',
       reviewNote: 'ฉบับนี้ยังไม่ได้ตรวจทานทางภาษา ผู้ตรวจทานหลักคือทีมนักศึกษากฎหมายชารีอะห์อิสลาม สถาบันรัชต์ภาคย์ วิทยาเขตยะลา หากพบจุดที่ควรแก้ไข ช่วยแจ้งเราได้',
-      reportBtn: 'แจ้งจุดที่ควรแก้ไข', seeReview: 'ดูหนังสือก่อนตรวจทาน',
+      reportBtn: 'แจ้งจุดที่ควรแก้ไข', commentsTitle: 'แจ้งข้อผิดพลาดและความคิดเห็น',
+      commentsLead: 'พบคำแปลหรือการสะกดที่ควรแก้ไข โปรดระบุหน้าหรือเลขย่อหน้า และข้อความที่ควรเป็น ความคิดเห็นจะแสดงหลังผู้ดูแลตรวจแล้ว', seeReview: 'ดูหนังสือก่อนตรวจทาน',
       noPublished: 'ยังไม่มีหนังสือที่ตรวจทานเสร็จแล้ว ระหว่างนี้อ่านหนังสือได้ในหมวดก่อนตรวจทาน',
       heroTitle: 'สรุปแปลหนังสืออิสลามจากภาษาอาหรับ',
       heroText: 'อ่านสรุปเนื้อหากิตาบสำคัญเป็นภาษาไทยและภาษามลายูอักษรยาวี อ่านออนไลน์หรือดาวน์โหลด PDF ได้ฟรี',
@@ -245,7 +249,8 @@ footer img { height: 44px; width: auto; filter: brightness(0) invert(1); opacity
       reviewTitle: 'کتاب سبلوم دسيمق', reviewBadge: 'سبلوم دسيمق',
       reviewLead: 'کتاب دالم باهاݢين اين بلوم دسيمق بهاسڽ. اي بوليه دباچ دان دموات تورون، تتاڤي موڠکين اد يڠ ڤرلو دبتولکن. ڤڽيمق اوتام اياله ڤاسوقن ڤلاجر اوندڠ٢ شريعة اسلام، Rajapark Institute کمڤوس يالا، دان سموا ڤمباچ بوليه ممبنتو ممبريتاهو کسالهن. سلڤس دسيمق، کتاب اکن دڤينده کباهاݢين کتاب.',
       reviewNote: 'ناسخه اين بلوم دسيمق بهاسڽ. ڤڽيمق اوتام اياله ڤاسوقن ڤلاجر اوندڠ٢ شريعة اسلام، Rajapark Institute کمڤوس يالا. جک اندا منموکن کسالهن، سيلا بريتاهو کامي.',
-      reportBtn: 'لاڤورکن کسالهن', seeReview: 'ليهت کتاب سبلوم دسيمق',
+      reportBtn: 'لاڤورکن کسالهن', commentsTitle: 'لاڤورن کسالهن دان ڤندڤت',
+      commentsLead: 'جک اندا منموکن ترجمهن اتاو ايجاٴن يڠ ڤرلو دبتولکن، سيلا نيتاکن هلامن اتاو نومبور ڤرڠݢن دان اڤ يڠ سڤاتوتڽ. ڤندڤت اکن دڤاڤرکن سلڤس دسيمق اوليه ڤنتادبير.', seeReview: 'ليهت کتاب سبلوم دسيمق',
       noPublished: 'بلوم اد کتاب يڠ سلساي دسيمق. سيلا باچ کتاب دالم باهاݢين سبلوم دسيمق.',
       heroTitle: 'ريڠکسن ترجمهن کيتاب٢ اسلام درڤد بهاس عرب',
       heroText: 'باچ ريڠکسن کيتاب٢ ڤنتيڠ دالم بهاس تاي دان بهاس ملايو توليسن جاوي. باچ دالم تالين اتاو موات تورون PDF دڠن ڤرچوما.',
@@ -294,7 +299,25 @@ footer img { height: 44px; width: auto; filter: brightness(0) invert(1); opacity
   }
   const card = b => `<a class="card" href="#${esc(b.slug)}">${cover(b)}<span class="t">${nb(L(b, 'title'))}</span><span class="a">${esc(L(b, 'author'))}</span></a>`;
   const onShelf = (b, which = shelf) => (which === 'review') === isReview(b);
-  const reportBtn = () => SITE.feedback_url ? `<a class="dl alt" href="${esc(SITE.feedback_url)}" target="_blank" rel="noopener">${esc(t('reportBtn'))}</a>` : '';
+  const reportBtn = () => SITE.cusdis_app_id ? `<button type="button" class="dl alt" data-jump="comments">${esc(t('reportBtn'))}</button>`
+    : SITE.feedback_url ? `<a class="dl alt" href="${esc(SITE.feedback_url)}" target="_blank" rel="noopener">${esc(t('reportBtn'))}</a>` : '';
+
+  // Comments per book (Cusdis): readers write a name and a message, the admin approves it before it shows.
+  function commentsBlock(b) {
+    if (!SITE.cusdis_app_id) return '';
+    return `<section class="comments" id="comments"><h2>${esc(t('commentsTitle'))}</h2><p class="review-lead">${esc(t('commentsLead'))}</p>
+      <div id="cusdis_thread" data-host="https://cusdis.com" data-app-id="${esc(SITE.cusdis_app_id)}" data-page-id="${esc(b.slug)}" data-page-url="${esc((SITE.site_url || '') + '#' + b.slug)}" data-page-title="${esc(b.title_th)}"></div></section>`;
+  }
+  function mountComments() {
+    const el = document.getElementById('cusdis_thread');
+    if (!el) return;
+    const go = () => window.CUSDIS && window.CUSDIS.renderTo(el);
+    if (window.CUSDIS) return go();
+    if (!document.getElementById('cusdis-js')) {
+      const sc = document.createElement('script'); sc.id = 'cusdis-js'; sc.async = true; sc.src = 'https://cusdis.com/js/cusdis.es.js';
+      sc.onload = go; document.body.appendChild(sc);
+    } else document.getElementById('cusdis-js').addEventListener('load', go);
+  }
 
   function matches(b) {
     if (!onShelf(b)) return false;
@@ -370,9 +393,12 @@ footer img { height: 44px; width: auto; filter: brightness(0) invert(1); opacity
         ${['th', 'ms'].map(l => `<button type="button" role="tab" aria-selected="${rl === l}" data-l="${l}" class="${l === 'ms' ? 'jawi' : ''}">${esc(langName(l))}</button>`).join('')}
       </div>
       <div class="summary" lang="${rl === 'ms' ? 'ms-Arab' : 'th'}" dir="${rl === 'ms' ? 'rtl' : 'ltr'}">${s.html}</div>
+      ${commentsBlock(b)}
       ${related.length ? `<section class="related"><div class="section-head"><h2>${esc(t('related'))}</h2></div><div class="grid">${related.map(card).join('')}</div></section>` : ''}
     </div>`;
     view.querySelectorAll('.tabs button').forEach(el => el.onclick = () => { readLang = el.dataset.l; renderBook(b); });
+    view.querySelectorAll('[data-jump]').forEach(el => el.onclick = () => { const c = document.getElementById(el.dataset.jump); if (c) c.scrollIntoView({ behavior: 'smooth' }); });
+    mountComments();
   }
 
   function renderAbout() {

@@ -1,4 +1,6 @@
 {
   "feedback_url": "",
-  "admin_url": "https://github.com/khulasah-islamiah/khulasah-islamiah.github.io/actions/workflows/move-book.yml"
+  "admin_url": "https://github.com/khulasah-islamiah/khulasah-islamiah.github.io/actions/workflows/move-book.yml",
+  "cusdis_app_id": "",
+  "site_url": "https://khulasah-islamiah.github.io/"
 }
