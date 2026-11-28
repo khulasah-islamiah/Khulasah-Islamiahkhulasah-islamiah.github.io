@@ -300,7 +300,10 @@ footer img { height: 44px; width: auto; filter: brightness(0) invert(1); opacity
   const card = b => `<a class="card" href="#${esc(b.slug)}">${cover(b)}<span class="t">${nb(L(b, 'title'))}</span><span class="a">${esc(L(b, 'author'))}</span></a>`;
   const onShelf = (b, which = shelf) => (which === 'review') === isReview(b);
   const reportBtn = () => SITE.cusdis_app_id ? `<button type="button" class="dl alt" data-jump="comments">${esc(t('reportBtn'))}</button>`
-    : SITE.feedback_url ? `<a class="dl alt" href="${esc(SITE.feedback_url)}" target="_blank" rel="noopener">${esc(t('reportBtn'))}</a>` : '';
+    : SITE.feedback_url ? `<a class="dl alt" href="${esc(feedbackUrl(curBook))}" target="_blank" rel="noopener">${esc(t('reportBtn'))}</a>` : '';
+  // feedback_url may hold BOOKNAME where the form's pre-filled link had the book name; it is replaced with this book's title.
+  let curBook = null;
+  const feedbackUrl = b => String(SITE.feedback_url).replace(/BOOKNAME/g, encodeURIComponent(b ? b.title_th : ''));
 
   // Comments per book (Cusdis): readers write a name and a message, the admin approves it before it shows.
   function commentsBlock(b) {
@@ -361,6 +364,7 @@ footer img { height: 44px; width: auto; filter: brightness(0) invert(1); opacity
     document.getElementById('count').textContent = t('count')(list.length);
   }
   function renderShelf(which) {
+    curBook = null;
     if (shelf !== which) { shelf = which; cat = 'all'; q = ''; }
     view.innerHTML = `<div class="wrap">
       <div class="section-head"><h2>${esc(t(which === 'review' ? 'reviewTitle' : 'allBooks'))}</h2><span id="count" class="byline"></span></div>
@@ -373,6 +377,7 @@ footer img { height: 44px; width: auto; filter: brightness(0) invert(1); opacity
   }
 
   function renderBook(b) {
+    curBook = b;
     const rl = readLang || ui;
     const s = b.summary[rl] || { html: '' };
     const langName = l => T[ui]['lang_' + l];
