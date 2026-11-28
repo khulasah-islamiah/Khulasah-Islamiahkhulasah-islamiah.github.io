@@ -40,6 +40,7 @@ body.ms { font-family: var(--font-jawi); font-size: 18px; line-height: 2.05; }
 h1, h2, h3 { font-family: var(--font-head); font-weight: 700; line-height: 1.3; text-wrap: balance; }
 body.ms h1, body.ms h2, body.ms h3 { font-family: var(--font-jawi); }
 .ar { font-family: var(--font-ar); }
+.nw { white-space: nowrap; }
 a { color: var(--green-2); }
 button, input { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--action); outline-offset: 2px; }
@@ -176,7 +177,7 @@ footer img { height: 44px; width: auto; filter: brightness(0) invert(1); opacity
     <div class="bar">
       <a class="brand" href="#home">
         <img src="assets/logo-mark.png" alt="Khulasah Islamiah">
-        <span><span class="name">Khulasah Islamiah</span><span class="sub" data-i18n="slogan"></span></span>
+        <span><span class="name">Khulasah Islamiah</span><span class="sub" data-i18n-nb="slogan"></span></span>
       </a>
       <nav class="nav" aria-label="Main">
         <a href="#home" data-nav="home" data-i18n="nav_home"></a>
@@ -253,6 +254,9 @@ footer img { height: 44px; width: auto; filter: brightness(0) invert(1); opacity
 
   const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const t = k => T[ui][k];
+  // Thai has no spaces between words, and browsers sometimes split a word in the middle.
+  // Titles and names may only wrap at the spaces the author typed.
+  const nb = s => String(s ?? '').split(/ +(?!\d)/).map(w => `<span class="nw">${esc(w)}</span>`).join(' ');
   const catName = id => (CATS.find(c => c.id === id) || {})[ui] || id;
   const L = (b, k) => (ui === 'ms' ? b[k + '_ms'] : b[k + '_th']) || b[k + '_th'] || '';
   const view = document.getElementById('view');
@@ -264,10 +268,10 @@ footer img { height: 44px; width: auto; filter: brightness(0) invert(1); opacity
     return `<div class="cover gen" style="--c:${COVERS[b.category] || 'var(--cover-a)'}">
       <span class="ar" dir="rtl" lang="ar">${esc(b.title_ar)}</span>
       <span class="rule"></span>
-      <span><span class="tt${ui === 'ms' ? ' jawi' : ''}">${esc(L(b, 'title'))}</span><br><span class="by">${esc(L(b, 'author'))}</span></span>
+      <span><span class="tt${ui === 'ms' ? ' jawi' : ''}">${nb(L(b, 'title'))}</span><br><span class="by">${nb(L(b, 'author'))}</span></span>
       <span class="seal"><img src="assets/logo-mark.png" alt=""></span>${sample}${badge}</div>`;
   }
-  const card = b => `<a class="card" href="#${esc(b.slug)}">${cover(b)}<span class="t">${esc(L(b, 'title'))}</span><span class="a">${esc(L(b, 'author'))}</span></a>`;
+  const card = b => `<a class="card" href="#${esc(b.slug)}">${cover(b)}<span class="t">${nb(L(b, 'title'))}</span><span class="a">${esc(L(b, 'author'))}</span></a>`;
 
   function matches(b) {
     if (cat !== 'all' && b.category !== cat) return false;
@@ -289,7 +293,7 @@ footer img { height: 44px; width: auto; filter: brightness(0) invert(1); opacity
     view.innerHTML = `<div class="wrap">
       <section class="hero">
         <img src="assets/logo.png" alt="Khulasah Islamiah">
-        <div><h1>${esc(t('heroTitle'))}</h1><p>${esc(t('heroText'))}</p>
+        <div><h1>${nb(t('heroTitle'))}</h1><p>${esc(t('heroText'))}</p>
           <div class="search"><input id="q" type="search" autocomplete="off" placeholder="${esc(t('search'))}" value="${esc(q)}"></div></div>
       </section>
       ${chips()}
@@ -324,8 +328,8 @@ footer img { height: 44px; width: auto; filter: brightness(0) invert(1); opacity
     const related = BOOKS.filter(x => x !== b).sort((x, y) => (y.category === b.category) - (x.category === b.category)).slice(0, 4);
     const desc = L(b, 'description');
     view.innerHTML = `<div class="wrap narrow">
-      <h1 class="book-title">${esc(L(b, 'title'))}</h1>
-      <p class="byline">${esc(t('bookBy'))} ${esc(L(b, 'author'))} · <span class="ar" dir="rtl" lang="ar">${esc(b.title_ar)}</span>${b.added ? ` · <span style="font-variant-numeric:tabular-nums">${esc(b.added)}</span>` : ''}</p>
+      <h1 class="book-title">${nb(L(b, 'title'))}</h1>
+      <p class="byline">${esc(t('bookBy'))} ${nb(L(b, 'author'))} · <span class="ar" dir="rtl" lang="ar">${esc(b.title_ar)}</span>${b.added ? ` · <span style="font-variant-numeric:tabular-nums">${esc(b.added)}</span>` : ''}</p>
       <hr class="divider">
       <div class="book-cover">${cover(b, { badge: false })}</div>
       <div class="downloads">${dls}</div>
@@ -356,6 +360,7 @@ footer img { height: 44px; width: auto; filter: brightness(0) invert(1); opacity
     document.documentElement.dir = ui === 'ms' ? 'rtl' : 'ltr';
     document.body.classList.toggle('ms', ui === 'ms');
     document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = t(el.dataset.i18n));
+    document.querySelectorAll('[data-i18n-nb]').forEach(el => el.innerHTML = nb(t(el.dataset.i18nNb)));
     document.querySelectorAll('.langswitch button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === ui)));
   }
 
